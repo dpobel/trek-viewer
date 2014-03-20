@@ -1,0 +1,91 @@
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    font-size: 85%;
+}
+
+.trek-viewer,
+.is-chart-hidden .trek-viewer-map-container,
+.trek-viewer-map {
+    background: #333;
+    height: 100%;
+}
+
+.trek-viewer-map-container {
+    height: 60%;
+}
+
+.trek-viewer {
+    overflow: hidden;
+}
+
+.trek-viewer-menu-container {
+    top: 0;
+    right: 0;
+
+    border-bottom-left-radius: 5px;
+}
+
+.trek-viewer-menu-container .pure-form legend {
+    color: #ccc;
+    border-bottom: 1px solid #ccc;
+}
+
+.trek-viewer-default-menu, .trek-viewer-detailed-menu {
+    margin: 1em;
+}
+
+.trek-viewer-detailed-menu h1 {
+    font-weight: normal;
+    font-size: 1.2rem;
+    border-bottom: 1px solid #ccc;
+}
+
+.trek-viewer-detailed-menu ul {
+    list-style-type: square;
+    margin: 0 0 0 1.2em;
+    padding: 0;
+}
+
+.trek-viewer-chart-container {
+    background: #333;
+    width: 100%;
+    height: 40%;
+
+    -webkit-transform: translateY(0);
+       -moz-transform: translateY(0);
+        -ms-transform: translateY(0);
+         -o-transform: translateY(0);
+            transform: translateY(0);
+
+    -webkit-transition: all 0.30s ease-in-out;
+       -moz-transition: all 0.30s ease-in-out;
+        -ms-transition: all 0.30s ease-in-out;
+         -o-transition: all 0.30s ease-in-out;
+            transition: all 0.30s ease-in-out;
+}
+
+.is-chart-hidden .trek-viewer-chart-container {
+    -webkit-transform: translateY(100%);
+       -moz-transform: translateY(100%);
+        -ms-transform: translateY(100%);
+         -o-transform: translateY(100%);
+            transform: translateY(100%);
+}
+
+.trek-viewer-chart {
+    margin: 0 auto;
+    height: 95%;
+    width: 95%;
+}
+
+.overlay {
+    position:absolute;
+    background: rgba(30, 30, 30, 0.8);
+    color: #ccc;
+}
+
+.is-loading {
+    opacity: 0.5;
+}

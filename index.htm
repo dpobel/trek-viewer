@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Trek viewer</title>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="css/core.css">
+    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.2/leaflet.css" />
+    <link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.4.2/pure-min.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+    <div class="trek-viewer is-chart-hidden">
+        <div class="trek-viewer-map-container"></div>
+        <div class="trek-viewer-chart-container"><div class="trek-viewer-chart"></div></div>
+        <div class="trek-viewer-menu-container overlay"></div>
+    </div>
+    <script src="http://yui.yahooapis.com/3.15.0/build/yui/yui-min.js"></script>
+    <script>
+    YUI.GlobalConfig = {
+        modules: {
+            'trek-viewer': {
+                fullpath: 'js/app/trek-viewer.js',
+                requires: [
+                    'leaflet-gpx', 'leaflet',
+                    'app', 'app-transitions', 'charts',
+                    'default-menu', 'detailed-menu'
+                ]
+            },
+            'default-menu': {
+                fullpath: 'js/views/default-menu.js',
+                requires: ['view', 'handlebars']
+            },
+            'detailed-menu': {
+                fullpath: 'js/views/detailed-menu.js',
+                requires: ['view', 'handlebars', 'event-tap']
+            },
+            'leaflet': {
+                async: false,
+                fullpath: 'http://cdn.leafletjs.com/leaflet-0.7.2/leaflet.js'
+            },
+            'leaflet-gpx': {
+                async: false,
+                fullpath: 'vendor/leaflet-gpx/gpx.js',
+                requires: ['leaflet']
+            },
+        },
+    };
+    </script>
+    <script>
+    YUI().use('trek-viewer', function (Y) {
+        var trekViewer,
+            ignKey = 'o9nlfmyiucxzefxal1x6ac7e',
+
+        trekViewer = new Y.TrekViewer({
+            root: '/trek-viewer/',
+            container: '.trek-viewer',
+            viewContainer: '.trek-viewer-menu-container',
+            ignApiKey: ignKey,
+        });
+
+        trekViewer.render().dispatch();
+    });
+    </script>
+
+    <script type="text/template" id="defaultMenu-tpl">
+    <form class="pure-form">
+        <fieldset>
+            <legend>Load a GPX file from the web</legend>
+            <input type="url" class="file-url" placeholder="URL of a GPX file" required>
+
+            <button type="submit" class="pure-button pure-button-primary">Load</button>
+        </fieldset>
+    </form>
+    </script>
+
+
+    <script type="text/template" id="detailedMenu-tpl">
+        <h1>{{ name }}</h1>
+        <ul>
+            <li>Distance: <strong>{{ distance }}&nbsp;km</strong></li>
+            <li>
+                Elevation:
+                {{#if isLoop}}
+                <strong>±{{elevation.gain}}&nbsp;m</strong>
+                {{else}}
+                <strong>+{{ elevation.gain }}&nbsp;m/-{{ elevation.loss}}&nbsp;m</strong>
+                {{/if}}
+            </li>
+        </ul>
+        <p>
+            <button class="fit-trek pure-button pure-button-primary">Fit to trek</button>
+            <button class="zoom-start pure-button pure-button-primary">Zoom on start</button>
+        </p>
+        <p>
+            <button class="toggle-chart pure-button pure-button-primary">Toggle the elevation chart</button>
+        </p>
+        <hr>
+        <p><button class="load-another pure-button pure-button-primary">Load another file</button></p>
+    </script>
+</body>
+</html>
