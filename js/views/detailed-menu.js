@@ -1,9 +1,6 @@
 YUI.add('detailed-menu', function (Y) {
     "use strict";
 
-    var ALT_SAME_POINT = 5,
-        COORD_SAME_POINT = 0.01;
-
     Y.namespace('TV');
 
     Y.TV.DetailedMenu = Y.Base.create('detailedMenu', Y.View, [], {
@@ -27,36 +24,23 @@ YUI.add('detailed-menu', function (Y) {
             this.template = Y.Handlebars.compile(Y.one('#detailedMenu-tpl').getHTML());
         },
 
-        _getGpxInfo: function () {
-            var gpx = this.get('gpx'),
-                isLoop = false,
-                start = this.get('start'),
-                end = this.get('end'),
-                gain = gpx.get_elevation_gain(),
-                loss = gpx.get_elevation_loss();
+        _getTrackInfo: function () {
+            var track = this.get('track');
 
-            if (
-                Math.abs(gain - loss) < ALT_SAME_POINT
-                && Math.abs(start.lat - end.lat) < COORD_SAME_POINT
-                && Math.abs(end.lng - end.lng) < COORD_SAME_POINT
-            ) {
-                isLoop = true;
-            }
-            
             return {
-                isLoop: isLoop,
-                name: gpx.get_name(),
-                distance: gpx.m_to_km(gpx.get_distance()).toFixed(1),
+                isLoop: track.isLoop(),
+                name: track.get('name'),
+                distance: (track.get('distance') / 1000).toFixed(1),
                 elevation: {
-                    gain: parseInt(gpx.get_elevation_gain(), 10),
-                    loss: parseInt(gpx.get_elevation_loss(), 10)
+                    gain: Math.round(track.get('globalElevation').gain),
+                    loss: Math.round(track.get('globalElevation').loss)
                 },
             };
         },
 
         render: function () {
             this.get('container').setContent(
-                this.template(this._getGpxInfo()
+                this.template(this._getTrackInfo()
             ));
 
             return this;
@@ -83,15 +67,7 @@ YUI.add('detailed-menu', function (Y) {
         }
     }, {
         ATTRS: {
-            gpx: {
-                value: null
-            },
-
-            start: {
-                value: null
-            },
-
-            end: {
+            track: {
                 value: null
             },
         }

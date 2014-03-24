@@ -21,9 +21,9 @@
             'trek-viewer': {
                 fullpath: 'js/app/trek-viewer.js',
                 requires: [
-                    'leaflet-gpx', 'leaflet',
+                    'leaflet',
                     'app', 'app-transitions', 'charts',
-                    'default-menu', 'detailed-menu'
+                    'default-menu', 'detailed-menu', 'gpx-file'
                 ]
             },
             'default-menu': {
@@ -38,10 +38,9 @@
                 async: false,
                 fullpath: 'http://cdn.leafletjs.com/leaflet-0.7.2/leaflet.js'
             },
-            'leaflet-gpx': {
-                async: false,
-                fullpath: 'http://rawgithub.com/mpetazzoni/leaflet-gpx/master/gpx.js',
-                requires: ['leaflet']
+            'gpx-file': {
+                fullpath: 'js/utils/gpx-file.js',
+                requires: ['base', 'base-observable']
             },
         },
     };

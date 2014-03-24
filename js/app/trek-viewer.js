@@ -6,7 +6,8 @@ YUI.add('trek-viewer', function (Y) {
         HIDDEN_CHART_CLASS = 'is-chart-hidden',
         DEFAULT_CENTER = [46.37389, 2.4775],
         DEFAULT_ZOOM = 6,
-        ZOOM_DETAILS = 15;
+        ZOOM_DETAILS = 15,
+        CHART_LABEL_INCREMENT = 5;
 
     Y.TrekViewer = Y.Base.create('trekViewer', Y.App, [], {
         views: {
@@ -19,12 +20,8 @@ YUI.add('trek-viewer', function (Y) {
         },
 
         initializer: function () {
-            var app = this;
-
             this.on('*:loadGPXUrl', function (e) {
-                this._loadGpxUrl(e.url, function () {
-                    app.navigate('#/details/' + win.encodeURIComponent(e.url));
-                });
+                this._loadGpxUrl(e.url);
             });
 
             this.on('*:loadNew', function () {
@@ -33,15 +30,11 @@ YUI.add('trek-viewer', function (Y) {
             });
 
             this.on('*:fitMap', function () {
-                this.get('map').fitBounds(this.get('gpx').getBounds());
+                this.get('map').fitBounds(this.get('gpxLine').getBounds());
             });
 
             this.on('*:zoomStart', function () {
-                this.get('map').setView(this.get('start'), ZOOM_DETAILS);
-                /*
-                    .panTo(this.get('start'))
-                    .setZoom(ZOOM_DETAILS);
-                 */
+                this.get('map').setView(this.get('track').getStartPoint(), ZOOM_DETAILS);
             });
 
             this.on('*:toggleChart', function () {
@@ -55,18 +48,40 @@ YUI.add('trek-viewer', function (Y) {
                 }
                 this.get('map').invalidateSize(true);
             });
+
+
+            this.after('gpxChange', function (e) {
+                var track;
+               
+                if ( e.newVal === null ) {
+                    this.get('map')
+                        .removeLayer(this.get('gpxLine'))
+                        .removeLayer(this.get('start'))
+                        .setView(DEFAULT_CENTER, DEFAULT_ZOOM);
+                    this.set('gpxLine', null);
+                    this.set('track', null);
+                    this.set('start', null);
+                    this.get('chart').destroy(true);
+                } else {
+                    track = this.get('gpx').get('tracks')[0];
+                    this.set('track', track);
+                    this.set('gpxLine', L.polyline(track.get('points')));
+                    this.set('start', L.marker(track.getStartPoint()));
+                    this.get('map')
+                        .addLayer(this.get('gpxLine'))
+                        .addLayer(this.get('start'))
+                        .setView(track.getStartPoint(), ZOOM_DETAILS);
+                    this._createProfileChart();
+                }
+            });
         },
 
         _resetState: function () {
             this.get('container').addClass(HIDDEN_CHART_CLASS);
-            this.get('map').removeLayer(this.get('gpx'));
-            this.get('map').setView(DEFAULT_CENTER, DEFAULT_ZOOM);
             this.set('gpx', null);
-            this.set('points', null);
-            this.get('chart').destroy(true);
         },
 
-        _loadGpxUrl: function (url, callback) {
+        _loadGpxUrl: function (url) {
             var gpxFile = 'http://www.corsproxy.com/' + url.replace(/^http:\/\//, ''),
                 app = this, io,
                 gpx;
@@ -79,7 +94,16 @@ YUI.add('trek-viewer', function (Y) {
             io.send(gpxFile, {
                 on: {
                     success: function (id, req) {
-                        app._createPathLayer(req.response, callback);
+                        try {
+                            gpx = new Y.TV.GPXFile({
+                                xml: req.response
+                            });
+                        } catch (e) {
+                            // TODO handle error
+                            console.error(e);
+                        }
+                        app.set('gpx', gpx);
+                        app.navigate('#/details/' + win.encodeURIComponent(url));
                     },
                     failure: function (id, req) {
                         // TODO handle error
@@ -90,58 +114,25 @@ YUI.add('trek-viewer', function (Y) {
                     }
                 }
             });
-
-        },
-
-        _createPathLayer: function (xmlGpx, callback) {
-            var app = this, gpx;
-
-            gpx = new L.GPX(xmlGpx, {
-                async: true,
-                marker_options: {
-                    startIconUrl: 'vendor/leaflet-gpx/pin-icon-start.png',
-                    shadowUrl: 'vendor/leaflet-gpx/pin-shadow.png',
-                    endIconUrl: false
-                }
-            })
-            .on('addline', function (e) {
-                var points = e.line.getLatLngs();
-
-                if ( !app.get('line') ) {
-                    app.set('gpx', gpx);
-                    app.set('points', points);
-
-                    app.get('map').setView(app.get('start'), ZOOM_DETAILS);
-                    app._createProfileChart();
-                    callback();
-                } else {
-                    console.warn('This application only supports one trek per GPX file');
-                }
-            }).addTo(app.get('map'));
         },
 
         _createProfileChart: function () {
-            var data = this.get('gpx').get_elevation_data(),
-                chartData = [],
+            var track = this.get('track'),
+                chartData = track.get('elevation'),
+                distance = track.get('distance') / 1000,
                 app = this,
-                labelValues = [0], labelValuesIncr = 5,
-                chart, progressMarker;
+                labelValues = [],
+                chart, progressMarker, i;
 
-            Y.Array.each(data, function (elt, i) {
-                chartData.push({
-                    distance: elt[0].toFixed(1),
-                    altitude: elt[1],
-                });
-                if ( elt[0] > (labelValues[labelValues.length - 1] + labelValuesIncr) ) {
-                    labelValues.push(labelValues[labelValues.length - 1] + labelValuesIncr);
-                }
-            }, this);
+            for(i = 0; i != Math.round(distance/CHART_LABEL_INCREMENT)+1; i++) {
+                labelValues[i] = i * CHART_LABEL_INCREMENT;
+            }
 
             chart = new Y.Chart({
                 type: "line",
                 axes: {
                     altitude: {
-                        keys: ['altitude'],
+                        keys: ['elevation'],
                         title: 'Altitude',
                         type: "numeric",
                         position: "left"
@@ -156,11 +147,11 @@ YUI.add('trek-viewer', function (Y) {
             });
             chart.getCategoryAxis().setAttrs({
                 'mininum': 0,
-                'maximum': data[data.length - 1][0].toFixed(1),
+                'maximum': distance,
                 'labelValues': labelValues
             });
             chart.on('planarEvent:mouseover', function (e) {
-                var point = app.get('points')[e.index];
+                var point = track.get('points')[e.index];
 
                 if ( !progressMarker ) {
                     progressMarker = new L.Marker(point);
@@ -169,7 +160,7 @@ YUI.add('trek-viewer', function (Y) {
                     progressMarker.setLatLng(point);
                 }
                 app.get('map').panTo(
-                    app.get('points')[e.index], {animate: false}
+                    point, {animate: false}
                 );
             });
             this.set('chart', chart);
@@ -183,9 +174,7 @@ YUI.add('trek-viewer', function (Y) {
             var app = this,
                 callback = function () {
                     app.showView('details', {
-                        gpx: app.get('gpx'),
-                        start: app.get('start'),
-                        end: app.get('end'),
+                        track: app.get('track')
                     });
                 };
 
@@ -237,30 +226,8 @@ YUI.add('trek-viewer', function (Y) {
                 value: null
             },
 
-            points: {
+            track: {
                 value: null
-            },
-
-            start: {
-                getter: function () {
-                    var points = this.get('points');
-
-                    if ( points === null ) {
-                        return null;
-                    }
-                    return points[0];
-                },
-            },
-
-            end: {
-                getter: function () {
-                    var points = this.get('points');
-
-                    if ( points === null ) {
-                        return null;
-                    }
-                    return points[points.length - 1];
-                }
             },
 
             map: {
@@ -272,6 +239,14 @@ YUI.add('trek-viewer', function (Y) {
                         layers: [this._getIgnLayer()]
                     });
                 }
+            },
+
+            gpxLine: {
+                value: null
+            },
+
+            start: {
+                value: null
             },
 
             chart: {
