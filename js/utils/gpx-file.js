@@ -139,6 +139,7 @@ YUI.add('gpx-file', function (Y) {
             var points = this.get('points'),
                 distance = this.get('distance'),
                 elevation = this.get('elevation'),
+                bounds = this.get('elevationBounds'),
                 lastElevation = false,
                 point = {
                     lat: p.lat,
@@ -166,6 +167,14 @@ YUI.add('gpx-file', function (Y) {
                 } else {
                     this.get('globalElevation').loss += lastElevation - p.ele;
                 }
+            }
+
+            if ( p.ele > bounds.max.elevation ) {
+                bounds.max.elevation = p.ele;
+                bounds.max.point = point;
+            } else if ( p.ele < bounds.min.elevation ) {
+                bounds.min.elevation = p.ele;
+                bounds.min.point = point;
             }
 
             elevation.push({
@@ -216,6 +225,19 @@ YUI.add('gpx-file', function (Y) {
                 value: {
                     gain: 0,
                     loss: 0
+                }
+            },
+
+            elevationBounds: {
+                value: {
+                    max: {
+                        elevation: -10000,
+                        point: false
+                    },
+                    min: {
+                        elevation: 10000,
+                        point: false
+                    }
                 }
             },
 

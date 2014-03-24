@@ -119,6 +119,7 @@ YUI.add('trek-viewer', function (Y) {
         _createProfileChart: function () {
             var track = this.get('track'),
                 chartData = track.get('elevation'),
+                chartMinEle, chartMaxEle, eleOffset,
                 distance = track.get('distance') / 1000,
                 app = this,
                 labelValues = [],
@@ -128,6 +129,11 @@ YUI.add('trek-viewer', function (Y) {
                 labelValues[i] = i * CHART_LABEL_INCREMENT;
             }
 
+            eleOffset = track.get('elevationBounds').max.elevation * 0.05;
+
+            chartMinEle = Math.round((track.get('elevationBounds').min.elevation - eleOffset)/10) * 10;
+            chartMaxEle = Math.round((track.get('elevationBounds').max.elevation + eleOffset)/10) * 10;
+
             chart = new Y.Chart({
                 type: "line",
                 axes: {
@@ -135,7 +141,9 @@ YUI.add('trek-viewer', function (Y) {
                         keys: ['elevation'],
                         title: 'Altitude',
                         type: "numeric",
-                        position: "left"
+                        position: "left",
+                        minimum: chartMinEle,
+                        maximum: chartMaxEle
                     }
                 },
                 categoryKey: "distance",
