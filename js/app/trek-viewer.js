@@ -58,6 +58,10 @@ YUI.add('trek-viewer', function (Y) {
                         .removeLayer(this.get('gpxLine'))
                         .removeLayer(this.get('start'))
                         .setView(DEFAULT_CENTER, DEFAULT_ZOOM);
+                    if ( this.get('progressMarker') ) {
+                        this.get('map').removeLayer(this.get('progressMarker'));
+                        this.set('progressMarker', null);
+                    }
                     this.set('gpxLine', null);
                     this.set('track', null);
                     this.set('start', null);
@@ -123,7 +127,7 @@ YUI.add('trek-viewer', function (Y) {
                 distance = track.get('distance') / 1000,
                 app = this,
                 labelValues = [],
-                chart, i, progressMarker, line;
+                chart, i, line;
 
             for(i = 0; i != Math.round(distance/CHART_LABEL_INCREMENT)+1; i++) {
                 labelValues[i] = i * CHART_LABEL_INCREMENT;
@@ -159,10 +163,12 @@ YUI.add('trek-viewer', function (Y) {
                 'labelValues': labelValues
             });
             chart.on('planarEvent:mouseover', function (e) {
-                var point = track.get('points')[e.index];
+                var point = track.get('points')[e.index],
+                    progressMarker = app.get('progressMarker');
 
                 if ( !progressMarker ) {
-                    progressMarker = new L.Marker(point);
+                    progressMarker = L.marker(point);
+                    app.set('progressMarker', progressMarker);
                     progressMarker.addTo(app.get('map'));
 
                     chart.get('graph').get('graphic').set('autoDraw', true);
@@ -284,6 +290,10 @@ YUI.add('trek-viewer', function (Y) {
             },
 
             start: {
+                value: null
+            },
+
+            progressMarker: {
                 value: null
             },
 
