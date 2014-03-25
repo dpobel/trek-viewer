@@ -66,6 +66,9 @@ YUI.add('trek-viewer', function (Y) {
                     this.set('track', null);
                     this.set('start', null);
                     this.get('chart').destroy(true);
+                    if ( this.get('progressLine') ) {
+                        this.get('progressLine').destroy(true);
+                    }
                 } else {
                     track = this.get('gpx').get('tracks')[0];
                     this.set('track', track);
@@ -125,9 +128,8 @@ YUI.add('trek-viewer', function (Y) {
                 chartData = track.get('elevation'),
                 chartMinEle, chartMaxEle, eleOffset,
                 distance = track.get('distance') / 1000,
-                app = this,
                 labelValues = [],
-                chart, i, line;
+                chart, i;
 
             for(i = 0; i != Math.round(distance/CHART_LABEL_INCREMENT)+1; i++) {
                 labelValues[i] = i * CHART_LABEL_INCREMENT;
@@ -162,52 +164,60 @@ YUI.add('trek-viewer', function (Y) {
                 'maximum': distance,
                 'labelValues': labelValues
             });
-            chart.on('planarEvent:mouseover', function (e) {
-                var point = track.get('points')[e.index],
-                    progressMarker = app.get('progressMarker');
+            this.set('chart', chart);
+            chart.on(
+                'planarEvent:mouseover', Y.bind(this._handleChartProgress, this)
+            );
+        },
 
-                if ( !progressMarker ) {
-                    progressMarker = L.marker(point);
-                    app.set('progressMarker', progressMarker);
-                    progressMarker.addTo(app.get('map'));
+        _handleChartProgress: function (e) {
+            var point = this.get('track').get('points')[e.index];
 
-                    chart.get('graph').get('graphic').set('autoDraw', true);
-                    line = chart.get('graph').get('graphic').addShape({
+            this._moveProgressMarkerTo(point);
+            this._moveProgressLine(e.x);
+        },
+
+        _moveProgressMarkerTo: function (point) {
+            var progressMarker = this.get('progressMarker');
+
+            if ( !progressMarker ) {
+                progressMarker = L.marker(point);
+                this.set('progressMarker', progressMarker);
+                progressMarker.addTo(this.get('map'));
+            }
+            progressMarker.setLatLng(point);
+            this.get('map').panTo(point, {animate: false});
+        },
+
+        _moveProgressLine: function (x) {
+            var line = this.get('progressLine'),
+                chart = this.get('chart');
+
+            chart.get('graph').get('graphic').set('autoDraw', true);
+            if ( !line ) {
+                this.set(
+                    'progressLine',
+                    chart.get('graph').get('graphic').addShape({
                         type: "path",
                         stroke: {
                             weight: 1,
                             color: "#333"
                         }
-                    });
-                    line.clear();
-                    line.moveTo(
-                        e.x - chart.get('axes').elevation.get('width'),
-                        0
-                    );
-                    line.lineTo(
-                        e.x - chart.get('axes').elevation.get('width'),
-                        chart.get('graph').get('graphic').get('height')
-                    );
-                    line.end();
-
-                } else {
-                    progressMarker.setLatLng(point);
-                    line.clear();
-                    line.moveTo(
-                        e.x - chart.get('axes').elevation.get('width'),
-                        0
-                    );
-                    line.lineTo(
-                        e.x - chart.get('axes').elevation.get('width'),
-                        chart.get('graph').get('graphic').get('height')
-                    );
-                    line.end();
-                }
-                app.get('map').panTo(
-                    point, {animate: false}
+                    })
                 );
-            });
-            this.set('chart', chart);
+                line = this.get('progressLine');
+            }
+
+            line.clear();
+            line.moveTo(
+                x - chart.get('axes').elevation.get('width'),
+                0
+            );
+            line.lineTo(
+                x - chart.get('axes').elevation.get('width'),
+                chart.get('graph').get('graphic').get('height')
+            );
+            line.end();
         },
 
         _handleDefaultMenu: function () {
@@ -294,6 +304,10 @@ YUI.add('trek-viewer', function (Y) {
             },
 
             progressMarker: {
+                value: null
+            },
+
+            progressLine: {
                 value: null
             },
 
