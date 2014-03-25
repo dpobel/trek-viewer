@@ -123,7 +123,7 @@ YUI.add('trek-viewer', function (Y) {
                 distance = track.get('distance') / 1000,
                 app = this,
                 labelValues = [],
-                chart, progressMarker, i;
+                chart, i, progressMarker, line;
 
             for(i = 0; i != Math.round(distance/CHART_LABEL_INCREMENT)+1; i++) {
                 labelValues[i] = i * CHART_LABEL_INCREMENT;
@@ -137,7 +137,7 @@ YUI.add('trek-viewer', function (Y) {
             chart = new Y.Chart({
                 type: "line",
                 axes: {
-                    altitude: {
+                    elevation: {
                         keys: ['elevation'],
                         title: 'Altitude',
                         type: "numeric",
@@ -164,8 +164,38 @@ YUI.add('trek-viewer', function (Y) {
                 if ( !progressMarker ) {
                     progressMarker = new L.Marker(point);
                     progressMarker.addTo(app.get('map'));
+
+                    chart.get('graph').get('graphic').set('autoDraw', true);
+                    line = chart.get('graph').get('graphic').addShape({
+                        type: "path",
+                        stroke: {
+                            weight: 1,
+                            color: "#333"
+                        }
+                    });
+                    line.clear();
+                    line.moveTo(
+                        e.x - chart.get('axes').elevation.get('width'),
+                        0
+                    );
+                    line.lineTo(
+                        e.x - chart.get('axes').elevation.get('width'),
+                        chart.get('graph').get('graphic').get('height')
+                    );
+                    line.end();
+
                 } else {
                     progressMarker.setLatLng(point);
+                    line.clear();
+                    line.moveTo(
+                        e.x - chart.get('axes').elevation.get('width'),
+                        0
+                    );
+                    line.lineTo(
+                        e.x - chart.get('axes').elevation.get('width'),
+                        chart.get('graph').get('graphic').get('height')
+                    );
+                    line.end();
                 }
                 app.get('map').panTo(
                     point, {animate: false}
