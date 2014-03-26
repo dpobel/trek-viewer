@@ -169,6 +169,32 @@ YUI.add('trek-viewer', function (Y) {
                     setTextFunction: function (textField, data) {
                         Y.one(textField).setContent(data);
                     },
+                },
+                styles: {
+                    axes: {
+                        elevation: {
+                            label: {
+                                color: "#bbb"
+                            },
+                            title: {
+                                color: "#bbb"
+                            }
+                        },
+                        distance: {
+                            label: {
+                                color: "#bbb"
+                            }
+                        }
+                    },
+                    series: {
+                        elevation: {
+                            line: {
+                                weight: 5,
+                                color: "#03f",
+                                alpha: 0.7
+                            }
+                        }
+                    }
                 }
             });
             chart.getCategoryAxis().setAttrs({
