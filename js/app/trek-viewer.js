@@ -7,7 +7,8 @@ YUI.add('trek-viewer', function (Y) {
         DEFAULT_CENTER = [46.37389, 2.4775],
         DEFAULT_ZOOM = 6,
         ZOOM_DETAILS = 15,
-        CHART_LABEL_INCREMENT = 5;
+        CHART_LABEL_INCREMENT = 5,
+        TOOLTIP_TPL = 'Distance: {distance}&nbsp;km<br>Elevation: {elevation}&nbsp;m';
 
     Y.TrekViewer = Y.Base.create('trekViewer', Y.App, [], {
         views: {
@@ -158,6 +159,17 @@ YUI.add('trek-viewer', function (Y) {
                 verticalGridlines: true,
                 dataProvider: chartData,
                 interactionType: "planar",
+                tooltip: {
+                    planarLabelFunction: function (categoryAxis, valueItems, index) {
+                        return Y.Lang.sub(TOOLTIP_TPL, {
+                            distance: this.get('dataProvider')[index].distance.toFixed(1),
+                            elevation: valueItems[0].value.toFixed(1)
+                        });
+                    },
+                    setTextFunction: function (textField, data) {
+                        Y.one(textField).setContent(data);
+                    },
+                }
             });
             chart.getCategoryAxis().setAttrs({
                 'mininum': 0,
