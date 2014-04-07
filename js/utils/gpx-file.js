@@ -78,6 +78,9 @@ YUI.add('gpx-file', function (Y) {
             for(i = 0; i != points.length; i++) {
                 point = points.item(i);
 
+                if ( !point.getElementsByTagName('ele').length ) {
+                    continue;
+                }
                 track.addPoint({
                     lat: parseFloat(point.getAttribute('lat')),
                     lng: parseFloat(point.getAttribute('lon')),
