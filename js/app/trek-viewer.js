@@ -108,6 +108,7 @@ YUI.add('trek-viewer', function (Y) {
                             });
                         } catch (e) {
                             // TODO handle error
+                            alert("Erreur lors du chargement de " + url + " :(");
                             console.error(e);
                         }
                         app.set('gpx', gpx);
@@ -115,6 +116,7 @@ YUI.add('trek-viewer', function (Y) {
                     },
                     failure: function (id, req) {
                         // TODO handle error
+                        alert("Erreur lors du chargement de " + url + " :(");
                         console.log(arguments);
                     },
                     end: function () {
