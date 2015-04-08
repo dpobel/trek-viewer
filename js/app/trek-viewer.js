@@ -100,6 +100,7 @@ YUI.add('trek-viewer', function (Y) {
             this.get('viewContainer').addClass('is-loading');
             io = new Y.IO();
             io.send(gpxFile, {
+                xdr: {use: 'native'},
                 on: {
                     success: function (id, req) {
                         try {
