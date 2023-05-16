@@ -7,7 +7,7 @@ YUI.add('trek-viewer', function (Y) {
         DEFAULT_CENTER = [46.37389, 2.4775],
         DEFAULT_ZOOM = 6,
         ZOOM_DETAILS = 15,
-        MAX_ZOOM = 16; // SCAN25TOUR is not able to do more
+        MAX_ZOOM = 16, // SCAN25TOUR is not able to do more
         CHART_LABEL_INCREMENT = 5,
         TOOLTIP_TPL = 'Distance: {distance}&nbsp;km<br>Elevation: {elevation}&nbsp;m';
 
