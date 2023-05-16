@@ -7,6 +7,7 @@ YUI.add('trek-viewer', function (Y) {
         DEFAULT_CENTER = [46.37389, 2.4775],
         DEFAULT_ZOOM = 6,
         ZOOM_DETAILS = 15,
+        MAX_ZOOM = 16; // SCAN25TOUR is not able to do more
         CHART_LABEL_INCREMENT = 5,
         TOOLTIP_TPL = 'Distance: {distance}&nbsp;km<br>Elevation: {elevation}&nbsp;m';
 
@@ -284,7 +285,7 @@ YUI.add('trek-viewer', function (Y) {
             var scanWmtsUrl = "http://wxs.ign.fr/"
                 + this.get('ignApiKey')
                 + "/geoportail/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&"
-                + "LAYER=GEOGRAPHICALGRIDSYSTEMS.MAPS&STYLE=normal&TILEMATRIXSET=PM&"
+                + "LAYER=GEOGRAPHICALGRIDSYSTEMS.MAPS.SCAN25TOUR&STYLE=normal&TILEMATRIXSET=PM&"
                 + "TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&FORMAT=image%2Fjpeg";
             return L.tileLayer(scanWmtsUrl, {attribution: '&copy; <a href="http://www.ign.fr/">IGN</a>'});
         },
@@ -331,6 +332,7 @@ YUI.add('trek-viewer', function (Y) {
                     return L.map(this._getMapElement(), {
                         center: DEFAULT_CENTER,
                         zoom: DEFAULT_ZOOM,
+                        maxZoom: MAX_ZOOM,
                         layers: [this._getIgnLayer()]
                     });
                 }
