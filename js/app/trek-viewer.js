@@ -91,7 +91,7 @@ YUI.add('trek-viewer', function (Y) {
         },
 
         _loadGpxUrl: function (url) {
-            var gpxFile = url, //'http://www.corsproxy.com/' + url.replace(/^http:\/\//, ''),
+            var gpxFile = `https://corsproxy.io/?${encodeURIComponent(url)}`,
                 app = this, io,
                 gpx;
 
